@@ -1,19 +1,37 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import "./sidebar.css";
 
 export function Sidebar() {
+  const { session } = useAuth();
+
   return (
     <nav aria-label="Primary" className="sidebar">
       <div className="sectionTitle">Console</div>
 
-      <NavItem to="/users">Users</NavItem>
-      <NavItem to="/policies">Policies</NavItem>
-      <NavItem to="/audit">Audit Log</NavItem>
+      {session ? (
+        <>
+          <NavItem to="/users">Users</NavItem>
+          <NavItem to="/policies">Policies</NavItem>
+          <NavItem to="/audit">Audit Log</NavItem>
 
-      <div style={{ flex: 1 }} />
+          <div style={{ flex: 1 }} />
 
-      <div className="sectionTitle">Session</div>
-      <NavItem to="/login">Login</NavItem>
+          <div className="sectionTitle">Session</div>
+          <NavItem to="/login">Account</NavItem>
+        </>
+      ) : (
+        <>
+          <div style={{ color: "var(--muted)", fontSize: 13 }}>
+            Sign in to access the console.
+          </div>
+
+          <div style={{ flex: 1 }} />
+
+          <div className="sectionTitle">Session</div>
+          <NavItem to="/login">Login</NavItem>
+        </>
+      )}
     </nav>
   );
 }
@@ -30,7 +48,7 @@ function NavItem({ to, children }: { to: string; children: React.ReactNode }) {
 }
 
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+`function SectionTitle({ children }: { children: React.ReactNode }) {
   return <div style={sectionTitleStyle}>{children}</div>;
 }
 
@@ -58,4 +76,4 @@ const sectionTitleStyle: React.CSSProperties = {
   letterSpacing: "0.08em",
   textTransform: "uppercase",
   opacity: 0.7,
-};
+};`
