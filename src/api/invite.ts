@@ -1,37 +1,43 @@
 import type { User } from "../types/users";
-import { getUsers, setUsers } from "./db";
+import type { AuditEvent } from "../types/audit";
 import { addAuditEvent } from "./audit";
+import { getUsers, setUsers } from "./db";
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function inviteUser(input: { email: string; name: string; actorEmail: string }): Promise<User> {
-  await sleep(500);
+export async function inviteUser(input: {
+  email: string;
+  name: string;
+  actorEmail: string;
+}): Promise<User> {
+  await sleep(250);
 
-  const email = input.email.trim().toLowerCase();
-  if (!email.includes("@")) throw new Error("Invalid email address.");
-
-    const newUser: User = {
+  const newUser: User = {
     id: crypto.randomUUID(),
-    email,
+    email: input.email.trim(),
     name: input.name.trim(),
     role: "viewer",
     status: "invited",
     createdAt: new Date().toISOString(),
-    };
+  };
 
-    const users = getUsers();
-    setUsers([newUser, ...users]);
+  const all = getUsers();
+  setUsers([newUser, ...all]);
 
-    addAuditEvent({
-      id: crypto.randomUUID(),
-      action: "user.invited",
-      actor: input.actorEmail,
-      targetUserId: newUser.id,
-      targetEmail: newUser.email,
-      createdAt: new Date().toISOString(),
-    });
+  const event: AuditEvent = {
+    id: crypto.randomUUID(),
+    ts: new Date().toISOString(),
+    actor: input.actorEmail,
+    action: "user.invited",
+    targetType: "user",
+    targetId: newUser.id,
+    targetEmail: newUser.email,
+    meta: { name: newUser.name },
+  };
 
-    return newUser;
+  addAuditEvent(event);
+
+  return newUser;
 }

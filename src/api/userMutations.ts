@@ -1,19 +1,33 @@
-import { getUsers, setUsers } from "./db";
-import { addAuditEvent } from "./audit";
 import type { User } from "../types/users";
-import type { AuditAction } from "../types/audit";
+import type { AuditEvent, AuditAction } from "../types/audit";
+import { addAuditEvent } from "./audit";
+import { getUsers, setUsers } from "./db";
 
-export function updateUser(updated: User, actorEmail: string, action: AuditAction) {
-  const users = getUsers();
-  const next = users.map((u) => (u.id === updated.id ? updated : u));
-  setUsers(next);
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
-  addAuditEvent({
+function audit(action: AuditAction, actorEmail: string, target: User, meta?: Record<string, unknown>) {
+  const event: AuditEvent = {
     id: crypto.randomUUID(),
-    action,
+    ts: new Date().toISOString(),
     actor: actorEmail,
-    targetUserId: updated.id,
-    targetEmail: updated.email,
-    createdAt: new Date().toISOString(),
-  });
+    action,
+    targetType: "user",
+    targetId: target.id,
+    targetEmail: target.email,
+    meta,
+  };
+  addAuditEvent(event);
+}
+
+export async function updateUser(updated: User, actorEmail: string, action: AuditAction): Promise<User> {
+  await sleep(250);
+
+  const all = getUsers();
+  setUsers(all.map((u) => (u.id === updated.id ? updated : u)));
+
+  audit(action, actorEmail, updated, { role: updated.role, status: updated.status });
+
+  return updated;
 }

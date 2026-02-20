@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import type { UsersQuery } from "../../types/users";
+import type { UsersQuery, UsersResponse } from "../../types/users";
 import { fetchUsers } from "../../api/users";
 
 export function useUsersQuery(q: UsersQuery) {
-  return useQuery({
+  return useQuery<UsersResponse>({
     queryKey: ["users", q],
     queryFn: () => fetchUsers(q),
-    staleTime: 15_000,
-    keepPreviousData: true,
+    placeholderData: (prev) => prev,
+    staleTime: 5_000,
   });
 }

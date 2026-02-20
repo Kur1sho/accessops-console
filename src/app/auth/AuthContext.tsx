@@ -1,6 +1,10 @@
 import React from "react";
 import { clearSession, loadSession, saveSession } from "../../utils/storage";
-import type { Session } from "../../utils/storage";
+
+type Session = {
+  user: { email: string; role: "admin" | "viewer" };
+  createdAt: string;
+};
 
 type AuthContextValue = {
   session: Session | null;
@@ -14,9 +18,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = React.useState<Session | null>(() => loadSession());
 
   function login(email: string, _password: string) {
-    // Demo auth only: any 8+ char password accepted
-    // Role rule: email containing "admin" => admin, else viewer
-    const role = email.toLowerCase().includes("admin") ? "admin" : "viewer";
+    const role: Session["user"]["role"] = email.toLowerCase().includes("admin")
+      ? "admin"
+      : "viewer";
 
     const next: Session = {
       user: { email, role },

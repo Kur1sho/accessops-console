@@ -1,26 +1,26 @@
 export type UserRole = "admin" | "viewer";
+export type UserStatus = "active" | "invited" | "suspended";
 
 export type User = {
   id: string;
   email: string;
   name: string;
   role: UserRole;
-  status: "active" | "invited" | "suspended";
-  createdAt: string; // ISO string
+  status: UserStatus;
+  createdAt: string;
 };
 
 export type UsersQuery = {
-  page: number;       // 1-based
-  pageSize: number;   // 10, 20, 50
-  search?: string;    // email/name substring
-  role?: UserRole | "all";
-  sortBy?: "createdAt" | "email" | "role";
+  q?: string;
+  role?: "all" | UserRole;
+  status?: "all" | UserStatus;
+  sortBy?: "createdAt" | "email" | "name" | "role";
   sortDir?: "asc" | "desc";
+  page?: number;
+  pageSize?: number;
 };
 
 export type UsersResponse = {
   items: User[];
   total: number;
-  page: number;
-  pageSize: number;
 };

@@ -97,7 +97,7 @@ export function AuditPage() {
   const data = useMemo(() => {
     void refreshKey;
     const events = listAuditEvents() as AuditEvent[];
-    return [...events].sort((a, b) => ((a.createdAt ?? "") < (b.createdAt ?? "") ? 1 : -1));
+    return [...events].sort((a, b) => (a.ts < b.ts ? 1 : -1));
   }, [refreshKey]);
 
   const actions = useMemo(() => {
@@ -169,7 +169,7 @@ export function AuditPage() {
           >
             <Input
               label="Search"
-              placeholder="Search anything (actor, action, target, metadata)…"
+              placeholder="Search anything…"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -265,21 +265,13 @@ export function AuditPage() {
 
               <tbody>
                 {filtered.map((e) => (
-                  <tr key={String(e.id)}>
-                    <Td mono>{safeDate(String(e.createdAt ?? ""))}</Td>
+                  <tr key={e.id}>
+                    <Td mono>{safeDate(e.ts)}</Td>
                     <Td>
                       <Pill tone={pillBg(String(e.action))}>{String(e.action)}</Pill>
                     </Td>
-                    <Td mono>{String(e.actor ?? "—")}</Td>
-                    <Td mono>
-                      {String(
-                        e.targetEmail ??
-                          e.targetUserId ??
-                          e.targetId ??
-                          (e as any).name ??
-                          "—"
-                      )}
-                    </Td>
+                    <Td mono>{e.actor ?? "—"}</Td>
+                    <Td mono>{e.targetEmail ?? e.targetId ?? "—"}</Td>
                     <Td>
                       <details>
                         <summary style={{ cursor: "pointer", color: "var(--muted)" }}>View</summary>
