@@ -1,37 +1,44 @@
 import React from "react";
-import type { Session } from "../../types/auth";
 import { clearSession, loadSession, saveSession } from "../../utils/storage";
+import type { Session } from "../../utils/storage";
 
-type AuthState = {
+type AuthContextValue = {
   session: Session | null;
-  setSession: (s: Session | null) => void;
+  login: (email: string, password: string) => void;
   logout: () => void;
 };
 
-const AuthContext = React.createContext<AuthState | null>(null);
+const AuthContext = React.createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSessionState] = React.useState<Session | null>(() =>
-    loadSession<Session>()
-  );
+  const [session, setSession] = React.useState<Session | null>(() => loadSession());
 
-  const setSession = (s: Session | null) => {
-    setSessionState(s);
-    if (s) saveSession(s);
-    else clearSession();
-  };
+  function login(email: string, _password: string) {
+    // Demo auth only: any 8+ char password accepted
+    // Role rule: email containing "admin" => admin, else viewer
+    const role = email.toLowerCase().includes("admin") ? "admin" : "viewer";
 
-  const logout = () => setSession(null);
+    const next: Session = {
+      user: { email, role },
+      createdAt: new Date().toISOString(),
+    };
 
-  return (
-    <AuthContext.Provider value={{ session, setSession, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    setSession(next);
+    saveSession(next);
+  }
+
+  function logout() {
+    setSession(null);
+    clearSession();
+  }
+
+  const value: AuthContextValue = { session, login, logout };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const ctx = React.useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider />");
   return ctx;
 }
